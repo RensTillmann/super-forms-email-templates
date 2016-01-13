@@ -94,7 +94,7 @@ if( !class_exists( 'SUPER_Email_Template_1' ) ) :
         */
         public function __construct(){
             $this->init_hooks();
-            do_action('SUPER_Email_Template_1_loaded');
+            do_action('super_email_template_one_loaded');
         }
 
         
@@ -143,30 +143,25 @@ if( !class_exists( 'SUPER_Email_Template_1' ) ) :
         private function init_hooks() {
             
             // Filters since 1.0.0
-            add_filter( 'super_shortcodes_after_form_elements_filter', array( $this, 'add_activation_code_element' ), 10, 2 );
 
             // Actions since 1.0.0
-            add_action( 'wp_ajax_super_resend_activation', array( $this, 'resend_activation' ) );
-            add_action( 'wp_ajax_nopriv_super_resend_activation', array( $this, 'resend_activation' ) );
             
             if ( $this->is_request( 'frontend' ) ) {
                 
                 // Filters since 1.0.0
 
                 // Actions since 1.0.0
-                add_action( 'super_before_printing_message', array( $this, 'resend_activation_code_script' ) );
 
             }
             
             if ( $this->is_request( 'admin' ) ) {
                 
                 // Filters since 1.0.0
-                add_filter( 'super_settings_after_smtp_server_filter', array( $this, 'add_settings' ), 10, 2 );
-                add_filter( 'super_email_tags_filter', array( $this, 'add_email_tags' ), 10, 1 );
+                add_filter( 'super_settings_after_email_template_filter', array( $this, 'add_settings' ), 10, 2 );
+                add_filter( 'super_before_sending_email_body_filter', array( $this, 'create_new_body' ), 50, 2 );
+                add_filter( 'super_before_sending_confirm_body_filter', array( $this, 'create_new_confirm_body' ), 50, 2 );
 
                 // Actions since 1.0.0
-                add_action( 'super_before_load_form_dropdown_hook', array( $this, 'add_ready_to_use_forms' ) );
-                add_action( 'super_after_load_form_dropdown_hook', array( $this, 'add_ready_to_use_forms_json' ) );
 
             }
             
@@ -175,7 +170,6 @@ if( !class_exists( 'SUPER_Email_Template_1' ) ) :
                 // Filters since 1.0.0
 
                 // Actions since 1.0.0
-                add_action( 'super_before_sending_email_hook', array( $this, 'before_sending_email' ) );
 
             }
             
@@ -342,167 +336,252 @@ if( !class_exists( 'SUPER_Email_Template_1' ) ) :
          *  @since      1.0.0
         */
         public static function add_settings( $array, $settings ) {
-            global $wp_roles;
-            $all_roles = $wp_roles->roles;
-            $editable_roles = apply_filters( 'editable_roles', $all_roles );
-            $roles = array(
-                '' => __( 'All user roles', 'super' )
-            );
-            foreach( $editable_roles as $k => $v ) {
-                $roles[$k] = $v['name'];
+			$array['email_template']['fields']['email_template']['values']['email_template_1'] = __( 'Email Template 1', 'super' );
+			$new_fields = array(
+	        	'email_template_1_logo' => array(
+	                'name' => __( 'Email logo', 'super' ),
+	                'desc' => __( 'Upload a logo to use for this email template', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_logo', $settings['settings'], '' ),
+	                'type' => 'image',
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1', 
+	            ),
+	            'email_template_1_title' => array(
+	                'name' => __( 'Email title', 'super' ),
+	                'desc' => __( 'A title to display below your logo', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_title', $settings['settings'], __( 'Your title', 'super' ) ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1', 
+            	),
+            	'email_template_1_confirm_title' => array(
+	                'name' => __( 'Email title (confirm)', 'super' ),
+	                'desc' => __( 'A title to display below your logo (used for confirmation emails)', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_confirm_title', $settings['settings'], __( 'Your title', 'super' ) ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1', 
+	            ),
+	            'email_template_1_subtitle' => array(
+	                'name' => __( 'Email subtitle', 'super' ),
+	                'desc' => __( 'A subtitle to display before the email body (content)', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_subtitle', $settings['settings'], __( 'Your subtitle', 'super' ) ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1', 
+	            ),
+	            'email_template_1_confirm_subtitle' => array(
+	                'name' => __( 'Email subtitle (confirm)', 'super' ),
+	                'desc' => __( 'A subtitle to display before the email body (used for confirmation emails)', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_confirm_subtitle', $settings['settings'], __( 'Your subtitle', 'super' ) ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1', 
+	            ),
+	            'email_template_1_copyright' => array(
+	                'name' => __( 'Email copyright', 'super' ),
+	                'desc' => __( 'Enter anything you like for the copyright section', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_copyright', $settings['settings'], __( '&copy; Someone, somewhere 2016', 'super' ) ),
+	                'placeholder' => __( '&copy; Someone, somewhere 2015', 'super' ),
+	                'type' => 'textarea',
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1',
+	            ),
+	            'email_template_1_socials' => array(
+	                'name' => __( 'Email social icons', 'super' ),
+	                'desc' => __( 'Put each social icon on a new line', 'super' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_socials', $settings['settings'], 'http://twitter.com/company|url_to_social_icon' ),
+	                'placeholder' =>  'http://twitter.com/company|url_to_social_icon',
+	                'type' => 'textarea',
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1',
+	            ),
+	            'email_template_1_header_colors' => array(
+	                'name' => __( 'Header colors', 'super' ),
+	                'type' => 'multicolor', 
+	                'colors' => array(
+	                    'email_template_1_header_bg_color' => array(
+	                        'label' => 'Header background color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_header_bg_color', $settings['settings'], '#5ba1d3' ),
+	                    ),
+	                    'email_template_1_header_title_color' => array(
+	                        'label' => 'Header title color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_header_title_color', $settings['settings'], '#ffffff' ),
+	                    ),
+	                ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1',
+	            ),
+	            'email_template_1_body_colors' => array(
+	                'name' => __( 'Body colors', 'super' ),
+	                'type' => 'multicolor', 
+	                'colors' => array(
+	                    'email_template_1_body_bg_color' => array(
+	                        'label' => 'Body background color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_body_bg_color', $settings['settings'], '#ffffff' ),
+	                    ),
+	                    'email_template_1_body_subtitle_color' => array(
+	                        'label' => 'Body subtitle color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_body_subtitle_color', $settings['settings'], '#474747' ),
+	                    ),
+	                    'email_template_1_body_font_color' => array(
+	                        'label' => 'Body font color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_body_font_color', $settings['settings'], '#9e9e9e' ),
+	                    ),            
+	                ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1',
+	            ),    
+	            'email_template_1_footer_colors' => array(
+	                'name' => __( 'Footer colors', 'super' ),
+	                'type' => 'multicolor', 
+	                'colors' => array(
+	                    'email_template_1_footer_bg_color' => array(
+	                        'label' => 'Footer background color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_footer_bg_color', $settings['settings'], '#ee4c50' ),
+	                    ),
+	                    'email_template_1_footer_font_color' => array(
+	                        'label' => 'Footer font color',
+	                		'default' => SUPER_Settings::get_value( 0, 'email_template_1_footer_font_color', $settings['settings'], '#ffffff' ),
+	                    ),
+	                ),
+	                'filter' => true,
+	                'parent' => 'email_template',
+	                'filter_value' => 'email_template_1',
+	            )
+			);
+	        $new_array = array_merge( $array['email_template']['fields'], $new_fields );
+			$array['email_template']['fields'] = $new_array;
+			return $array;
+        }
+
+
+        /**
+         * Hook into email body html before sending email
+         */
+        public function create_new_body( $email_body, $attr ) {
+            return self::body_html( $email_body, $attr, 'admin' );
+        }
+
+        /**
+         * Hook into confirm body html before sending email
+         */
+        public function create_new_confirm_body( $email_body, $attr ) {
+            return self::body_html( $email_body, $attr, 'confirm' );
+        }
+
+
+        /**
+         * Create the new email with the email body
+         *
+         * @param  string $email_body
+         * @param  array $attr
+         * @param  string $type
+         *
+         *  @since      1.0.0
+        */
+        public function body_html( $email_body, $attr, $type='admin' ) {
+            
+            if( $attr['settings']['email_template']!='email_template_1' ) {
+                return $email_body;   
             }
-            $reg_roles = $roles;
-            unset($reg_roles['']);
-            $array['register_login'] = array(        
-                'name' => __( 'Register & Login', 'super' ),
-                'label' => __( 'Register & Login Settings', 'super' ),
-                'fields' => array(
-                    'register_login_action' => array(
-                        'name' => __( 'Actions', 'super' ),
-                        'desc' => __( 'Select what this form should do (register or login)?', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_login_action', $settings['settings'], 'none' ),
-                        'filter' => true,
-                        'type' => 'select',
-                        'values' => array(
-                            'none' => __( 'None (do nothing)', 'super' ),
-                            'register' => __( 'Register a new user', 'super' ),
-                            'login' => __( 'Login (user will be logged in)', 'super' ),
-                            'reset_password' => __( 'Reset password (lost password)', 'super' ),
-                        ),
-                    ),
-                    'login_user_role' => array(
-                        'name' => __( 'Allowed user role(s)', 'super' ),
-                        'desc' => __( 'Which user roles are allowed to login?', 'super' ),
-                        'type' => 'select',
-                        'multiple' => true,
-                        'default' => SUPER_Settings::get_value( 0, 'login_user_role', $settings['settings'], '' ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'login',
-                        'values' => $roles,
-                    ),
-                    'register_user_role' => array(
-                        'name' => __( 'User role', 'super' ),
-                        'desc' => __( 'What user role should this user get?', 'super' ),
-                        'type' => 'select',
-                        'default' => SUPER_Settings::get_value( 0, 'register_user_role', $settings['settings'], '' ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register',
-                        'values' => $reg_roles,
-                    ),
-                    'register_login_activation' => array(
-                        'name' => __( 'Send activation email', 'super' ),
-                        'desc' => __( 'Optionally let users activate their account or let them instantly login without verification', 'super' ),
-                        'type' => 'select',
-                        'default' => SUPER_Settings::get_value( 0, 'register_login_activation', $settings['settings'], 'verify' ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register',
-                        'values' => array(
-                            'verify' => __( 'Send activation email', ' super' ),
-                            'auto' => __( 'Auto activate and login', 'super' ),
-                        ),
-                    ),
-                    'register_login_url' => array(
-                        'name' => __( 'Login page URL', 'super' ),
-                        'desc' => __( 'URL of your login page where you placed the login form, here users can activate their account', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_login_url', $settings['settings'], get_site_url() . '/login/' ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register,login,reset_password',
-                    ),
-                    'register_welcome_back_msg' => array(
-                        'name' => __( 'Welcome back message', 'super' ),
-                        'desc' => __( 'Display a welcome message after user has logged in (leave blank for no message)', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_welcome_back_msg', $settings['settings'], __( 'Welcome back {field_user_login}!', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'login',
-                    ),
-                    'register_incorrect_code_msg' => array(
-                        'name' => __( 'Incorrect activation code message', 'super' ),
-                        'desc' => __( 'Display a message when the activation code is incorrect', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_incorrect_code_msg', $settings['settings'], __( 'The combination username, password and activation code is incorrect!', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'login',
-                    ),
-                    'register_account_activated_msg' => array(
-                        'name' => __( 'Account activated message', 'super' ),
-                        'desc' => __( 'Display a message when account has been activated', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_account_activated_msg', $settings['settings'], __( 'Hello {field_user_login}, your account has been activated!', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'login',
-                    ),
-                    'register_activation_subject' => array(
-                        'name' => __( 'Activation Email Subject', 'super' ),
-                        'desc' => __( 'Example: Activate your account', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_activation_subject', $settings['settings'], __( 'Activate your account', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register,login',
-                    ),
-                    'register_activation_email' => array(
-                        'name' => __( 'Activation Email Body', 'super' ),
-                        'desc' => __( 'The email message. You can use {activation_code} and {register_login_url}', 'super' ),
-                        'type' => 'textarea',
-                        'default' => SUPER_Settings::get_value( 0, 'register_activation_email', $settings['settings'], "Dear {field_user_login},\n\nThank you for registering! Before you can login you will need to activate your account.\nBelow you will find your activation code. You need this code to activate your account:\n\nActivation Code: <strong>{register_activation_code}</strong>\n\nClick <a href=\"{register_login_url}?code={register_activation_code}\">here</a> to activate your account with the provided code.\n\n\nBest regards,\n\n{option_blogname}" ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register,login',
-                    ),                                      
-                    'register_login_user_meta' => array(
-                        'name' => __( 'Save custom user meta', 'super' ),
-                        'desc' => __( 'Usefull for external plugins such as WooCommerce. Example: "field_name|meta_key" (each on a new line)', 'super' ),
-                        'type' => 'textarea',
-                        'default' => SUPER_Settings::get_value( 0, 'register_login_user_meta', $settings['settings'], "first_name|billing_first_name\nlast_name|billing_last_name\naddress|billing_address" ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'register',
-                    ),
-                    'register_reset_password_success_msg' => array(
-                        'name' => __( 'Success message', 'super' ),
-                        'desc' => __( 'Display a message after user has reset their password (leave blank for no message)', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_reset_password_success_msg', $settings['settings'], __( 'Your password has been reset. We have just send you a new password to your email address.', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'reset_password',
-                    ),
-                    'register_reset_password_not_exists_msg' => array(
-                        'name' => __( 'Not found message', 'super' ),
-                        'desc' => __( 'Display a message when no user was found (leave blank for no message)', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_reset_password_not_exists_msg', $settings['settings'], __( 'We couldn\'t find a user with the given email address!', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'reset_password',
-                    ),
-                    'register_reset_password_subject' => array(
-                        'name' => __( 'Lost Password Email Subject', 'super' ),
-                        'desc' => __( 'Example: Your new password. You can use {user_login}', 'super' ),
-                        'default' => SUPER_Settings::get_value( 0, 'register_reset_password_subject', $settings['settings'], __( 'Your new password', 'super' ) ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'reset_password',
-                    ),
-                    'register_reset_password_email' => array(
-                        'name' => __( 'Lost Password Email Body', 'super' ),
-                        'desc' => __( 'The email message. You can use {user_login}, {register_generated_password} and {register_login_url}', 'super' ),
-                        'type' => 'textarea',
-                        'default' => SUPER_Settings::get_value( 0, 'register_reset_password_email', $settings['settings'], "Dear {user_login},\n\nYou just requested to reset your password.\nUsername: <strong>{user_login}</strong>\nPassword: <strong>{register_generated_password}</strong>\n\nClick <a href=\"{register_login_url}\">here</a> to login with your new password.\n\n\nBest regards,\n\n{option_blogname}" ),
-                        'filter' => true,
-                        'parent' => 'register_login_action',
-                        'filter_value' => 'reset_password',
-                    ),
-                )
-            );
-            return $array;
+            $settings_prefix = 'email_template_1_';
+            $header_bg_color = $attr['settings'][$settings_prefix.'header_bg_color'];
+            $header_title_color = $attr['settings'][$settings_prefix.'header_title_color'];
+            $header_logo = $attr['settings'][$settings_prefix.'logo'];
+            $body_bg_color = $attr['settings'][$settings_prefix.'body_bg_color'];
+            $body_subtitle_color = $attr['settings'][$settings_prefix.'body_subtitle_color'];
+            $body_font_color = $attr['settings'][$settings_prefix.'body_font_color'];
+            $footer_bg_color = $attr['settings'][$settings_prefix.'footer_bg_color'];
+            $footer_font_color = $attr['settings'][$settings_prefix.'footer_font_color'];
+            $footer_socials = $attr['settings'][$settings_prefix.'socials'];
+            $footer_copyright = SUPER_Common::email_tags( $attr['settings'][$settings_prefix.'copyright'], $attr['data'] );
+            if($type=='confirm'){
+                $settings_prefix = 'email_template_1_confirm_';
+            }
+            $header_title = SUPER_Common::email_tags( $attr['settings'][$settings_prefix.'title'], $attr['data'] );
+            $body_subtitle = SUPER_Common::email_tags( $attr['settings'][$settings_prefix.'subtitle'], $attr['data'] );
+            $old_email_body = $email_body;
+            $email_body  = '<body style="margin: 0; padding: 0;">';
+            $email_body .= '<table border="0" cellpadding="0" cellspacing="0" width="100%">';
+            $email_body .= '<tr>';
+            $email_body .= '<td style="padding: 10px 0 30px 0;">';
+            $email_body .= '<table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #cccccc; border-collapse: collapse;">';
+            $email_body .= '<tr>';
+            $email_body .= '<td align="center" bgcolor="'.$header_bg_color.'" style="padding: 40px 0 30px 0; color: '.$header_title_color.'; font-size: 28px; font-weight: bold; font-family: Arial, sans-serif;">';
+            $logo = wp_get_attachment_image_src($header_logo, 'full' );
+            $logo = !empty( $logo[0] ) ? $logo[0] : '';
+            if( !empty( $logo ) ) {
+                $email_body .= '<img src="'.$logo.'" alt="'.$header_title.'" style="padding: 0px 0 30px 0;display: block;" />';
+                $email_body .= $header_title;
+            }else{
+                $email_body .= $header_title;
+            }
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '<tr>';
+            $email_body .= '<td bgcolor="'.$body_bg_color.'" style="padding: 40px 30px 40px 30px;">';
+            $email_body .= '<table border="0" cellpadding="0" cellspacing="0" width="100%">';
+            $email_body .= '<tr>';
+            $email_body .= '<td style="color: '.$body_subtitle_color.'; font-family: Arial, sans-serif; font-size: 24px;">';
+            $email_body .= '<b>'.$body_subtitle.'</b>';
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '<tr>';
+            $email_body .= '<td style="padding: 20px 0 0 0; color: '.$body_font_color.'; font-family: Arial, sans-serif; font-size: 16px; line-height: 20px;">';
+            $email_body .= $old_email_body;
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '</table>';
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '<tr>';
+            $email_body .= '<td bgcolor="'.$footer_bg_color.'" style="padding: 30px 30px 30px 30px;">';
+            $email_body .= '<table border="0" cellpadding="0" cellspacing="0" width="100%">';
+            $email_body .= '<tr>';
+            $email_body .= '<td style="color:'.$footer_font_color.'; font-family: Arial, sans-serif; font-size: 14px;" width="75%">';
+            $email_body .= nl2br($footer_copyright);
+            $email_body .= '</td>';
+            $email_body .= '<td align="right" width="25%">';
+            if( $footer_socials!='' ) {
+            	$email_body .= '<table border="0" cellpadding="0" cellspacing="0">';
+            	$email_body .= '<tr>';
+            	$socials = explode( "\n", $footer_socials );
+				foreach( $socials as $v ) {
+	                $exploded = explode('|', $v);
+	                if( ( $exploded[0]!='' ) && ( $exploded[1]!='' ) ) {
+		                $email_body .= '<td style="font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;">';
+		                    $email_body .= '<a href="' . $exploded[0] . '" target="_blank" style="color:#ffffff;">';
+		                        $email_body .= '<img src="' . $exploded[1] . '" alt="Facebook" style="padding-left:5px;display: block;" border="0" />';
+		                    $email_body .= '</a>';
+		                $email_body .= '</td>';
+	            	}
+				}
+	            $email_body .= '</tr>';
+	            $email_body .= '</table>';
+        	}
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '</table>';
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '</table>';
+            $email_body .= '</td>';
+            $email_body .= '</tr>';
+            $email_body .= '</table>';
+            return $email_body;
         }
 
 
         /**
          * Hook into before sending email and check if we need to register or login a user
+         *
+         * @param  array $atts
          *
          *  @since      1.0.0
         */
