@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name: Super Forms Email Templates
  * Plugin URI:  http://codecanyon.net/item/super-forms-drag-drop-form-builder/13979866
- * Description: Adds an extra email template to choose frome
+ * Description: Adds an extra email template to choose from
  * Version:     1.0.0
  * Author:      feeling4design
  * Author URI:  http://codecanyon.net/user/feeling4design
