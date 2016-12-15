@@ -11,7 +11,7 @@
  * Plugin Name: Super Forms Email Templates
  * Plugin URI:  http://codecanyon.net/item/super-forms-drag-drop-form-builder/13979866
  * Description: Adds an extra email template to choose from
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      feeling4design
  * Author URI:  http://codecanyon.net/user/feeling4design
 */
@@ -37,7 +37,16 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
          *
          *	@since		1.0.0
         */
-        public $version = '1.0.0';
+        public $version = '1.0.1';
+
+        
+        /**
+         * @var string
+         *
+         *  @since      1.0.1
+        */
+        public $add_on_slug = 'email_templates';
+        public $add_on_name = 'Email Templates';
 
         
         /**
@@ -142,16 +151,13 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
         */
         private function init_hooks() {
             
-            // Filters since 1.0.0
+            register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
-            // Actions since 1.0.0
-            
+            // Filters since 1.0.1
+            add_filter( 'super_after_activation_message_filter', array( $this, 'activation_message' ), 10, 2 ); 
+
             if ( $this->is_request( 'frontend' ) ) {
                 
-                // Filters since 1.0.0
-
-                // Actions since 1.0.0
-
             }
             
             if ( $this->is_request( 'admin' ) ) {
@@ -167,12 +173,75 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
             
             if ( $this->is_request( 'ajax' ) ) {
 
-                // Filters since 1.0.0
+                // Filters since 1.0.1
+                add_filter( 'super_settings_end_filter', array( $this, 'activation' ), 100, 2 );
 
-                // Actions since 1.0.0
+                // Actions since 1.0.1
+                add_action( 'init', array( $this, 'update_plugin' ) );
 
             }
             
+        }
+
+
+        /**
+         * Automatically update plugin from the repository
+         *
+         *  @since      1.0.1
+        */
+        function update_plugin() {
+            if( defined('SUPER_PLUGIN_DIR') ) {
+                require_once ( SUPER_PLUGIN_DIR . '/includes/admin/update-super-forms.php' );
+                $plugin_remote_path = 'http://f4d.nl/super-forms/';
+                $plugin_slug = plugin_basename( __FILE__ );
+                new SUPER_WP_AutoUpdate( $this->version, $plugin_remote_path, $plugin_slug, '', '', $this->add_on_slug );
+            }
+        }
+
+
+        /**
+         * Add the activation under the "Activate" TAB
+         * 
+         * @since       1.0.1
+        */
+        public function activation($array, $data) {
+            if (method_exists('SUPER_Forms','add_on_activation')) {
+                return SUPER_Forms::add_on_activation($array, $this->add_on_slug, $this->add_on_name);
+            }else{
+                return $array;
+            }
+        }
+
+
+        /**  
+         *  Deactivate
+         *
+         *  Upon plugin deactivation delete activation
+         *
+         *  @since      1.0.1
+         */
+        public static function deactivate(){
+            if (method_exists('SUPER_Forms','add_on_deactivate')) {
+                SUPER_Forms::add_on_deactivate($this->add_on_slug);
+            }
+        }
+
+
+        /**
+         * Check license and show activation message
+         * 
+         * @since       1.0.1
+        */
+        public function activation_message( $activation_msg, $data ) {
+            if (method_exists('SUPER_Forms','add_on_activation_message')) {
+                $form_id = absint($data['id']);
+                $settings = $data['settings'];
+                if( (isset($settings['email_template'])) && ($settings['email_template']!='default_email_template') ) {
+                    return SUPER_Forms::add_on_activation_message($activation_msg, $this->add_on_slug, $this->add_on_name);
+                }
+            }else{
+                return $activation_msg;
+            }
         }
 
 
@@ -337,6 +406,13 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
                 return $email_body;   
             }
             $settings_prefix = 'email_template_1_';
+
+            // @since 1.0.1 - RTL support
+            $rtl = '';
+            if( (isset( $attr['settings']['theme_rtl'] )) && ($attr['settings']['theme_rtl']=='true') ) {
+                $rtl = 'true';
+            }
+
             $header_bg_color = $attr['settings'][$settings_prefix.'header_bg_color'];
             $header_title_color = $attr['settings'][$settings_prefix.'header_title_color'];
             $header_logo = $attr['settings'][$settings_prefix.'logo'];
@@ -383,7 +459,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
             $email_body .= '</tr>';
             $email_body .= '<tr>';
             $email_body .= '<td bgcolor="'.$body_bg_color.'" style="padding: 40px 30px 40px 30px;">';
-            $email_body .= '<table border="0" cellpadding="0" cellspacing="0" width="100%">';
+            $email_body .= '<table border="0" cellpadding="0" cellspacing="0" width="100%"' . ($rtl=='true' ? ' style="text-align:right;"' : '') . '>';
             if( $body_subtitle!='') {
 	            $email_body .= '<tr>';
 	            $email_body .= '<td style="color: '.$body_subtitle_color.'; font-family: Arial, sans-serif; font-size: 24px;">';

@@ -1,2 +1,5 @@
-January 15, 2016 - Version 1.0.0
+Dec 5, 2016 - Version 1.0.1
+- Added: RTL compatibility
+
+Jan 15, 2016 - Version 1.0.0
 - Initial release!
