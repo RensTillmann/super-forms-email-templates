@@ -11,7 +11,7 @@
  * Plugin Name: Super Forms Email Templates
  * Plugin URI:  http://codecanyon.net/item/super-forms-drag-drop-form-builder/13979866
  * Description: Adds an extra email template to choose from
- * Version:     1.0.2
+ * Version:     1.0.3
  * Author:      feeling4design
  * Author URI:  http://codecanyon.net/user/feeling4design
 */
@@ -37,7 +37,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
          *
          *	@since		1.0.0
         */
-        public $version = '1.0.2';
+        public $version = '1.0.3';
 
         
         /**
@@ -169,12 +169,6 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 
                 // Filters since 1.0.2
                 add_filter( 'super_settings_end_filter', array( $this, 'activation' ), 100, 2 );
-
-            }
-            
-            if ( $this->is_request( 'ajax' ) ) {
-
-                // Actions since 1.0.1
                 add_action( 'init', array( $this, 'update_plugin' ) );
 
             }
@@ -220,7 +214,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
          */
         public static function deactivate(){
             if (method_exists('SUPER_Forms','add_on_deactivate')) {
-                SUPER_Forms::add_on_deactivate($this->add_on_slug);
+                SUPER_Forms::add_on_deactivate(SUPER_Email_Templates()->add_on_slug);
             }
         }
 
@@ -237,9 +231,8 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
                 if( (isset($settings['email_template'])) && ($settings['email_template']!='default_email_template') ) {
                     return SUPER_Forms::add_on_activation_message($activation_msg, $this->add_on_slug, $this->add_on_name);
                 }
-            }else{
-                return $activation_msg;
             }
+            return $activation_msg;
         }
 
 
@@ -304,9 +297,10 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	            ),
 	            'email_template_1_socials' => array(
 	                'name' => __( 'Email social icons', 'super-forms' ),
-	                'desc' => __( 'Put each social icon on a new line', 'super-forms' ),
-	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_socials', $settings['settings'], 'http://twitter.com/company|url_to_social_icon' ),
-	                'placeholder' =>  'http://twitter.com/company|url_to_social_icon',
+                    'desc' => __( 'Put each social icon on a new line', 'super-forms' ),
+	                'label' => __( 'Put each on a new line, seperate values by pipes<br /><strong>Example:</strong> http://facebook.com/company|http://domain.com/fb-icon.png|Facebook', 'super-forms' ),
+	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_socials', $settings['settings'], 'url_facebook_page|url_social_icon|Facebook' ),
+	                'placeholder' =>  'url_facebook_page|url_social_icon|Facebook',
 	                'type' => 'textarea',
 	                'filter' => true,
 	                'parent' => 'email_template',
@@ -491,10 +485,11 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
             	$socials = explode( "\n", $footer_socials );
 				foreach( $socials as $v ) {
 	                $exploded = explode('|', $v);
+                    if(!isset($exploded[2])) $exploded[2] = '';
 	                if( ( $exploded[0]!='' ) && ( $exploded[1]!='' ) ) {
 		                $email_body .= '<td style="font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;">';
 		                    $email_body .= '<a href="' . $exploded[0] . '" target="_blank" style="color:#ffffff;">';
-		                        $email_body .= '<img src="' . $exploded[1] . '" alt="Facebook" style="padding-left:5px;display: block;" border="0" />';
+		                        $email_body .= '<img src="' . $exploded[1] . '" alt="' . $exploded[2] . '" style="padding-left:5px;display: block;" border="0" />';
 		                    $email_body .= '</a>';
 		                $email_body .= '</td>';
 	            	}
