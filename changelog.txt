@@ -1,4 +1,4 @@
-Jun 04, 2017 - Version 1.0.3
+Nov 16, 2017 - Version 1.0.3
 - Fix: Alt attribute for social icons in email footer
 - Added: Option to add custom name for social icons used for alt attribute in email footer
 
