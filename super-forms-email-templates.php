@@ -285,7 +285,8 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_title', $settings['settings'], __( 'Your title', 'super-forms' ) ),
 	                'filter' => true,
 	                'parent' => 'email_template',
-	                'filter_value' => 'email_template_1', 
+	                'filter_value' => 'email_template_1',
+                    'allow_empty' => true,
             	),
             	'email_template_1_confirm_title' => array(
 	                'name' => __( 'Email title (confirm)', 'super-forms' ),
@@ -293,7 +294,8 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_confirm_title', $settings['settings'], __( 'Your title', 'super-forms' ) ),
 	                'filter' => true,
 	                'parent' => 'email_template',
-	                'filter_value' => 'email_template_1', 
+	                'filter_value' => 'email_template_1',
+                    'allow_empty' => true,
 	            ),
 	            'email_template_1_subtitle' => array(
 	                'name' => __( 'Email subtitle', 'super-forms' ),
@@ -301,7 +303,8 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'default' => SUPER_Settings::get_value( 0, 'email_template_1_subtitle', $settings['settings'], __( 'Your subtitle', 'super-forms' ) ),
 	                'filter' => true,
 	                'parent' => 'email_template',
-	                'filter_value' => 'email_template_1', 
+	                'filter_value' => 'email_template_1',
+                    'allow_empty' => true,
 	            ),
 	            'email_template_1_confirm_subtitle' => array(
 	                'name' => __( 'Email subtitle (confirm)', 'super-forms' ),
@@ -310,6 +313,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'filter' => true,
 	                'parent' => 'email_template',
 	                'filter_value' => 'email_template_1', 
+                    'allow_empty' => true,
 	            ),
 	            'email_template_1_copyright' => array(
 	                'name' => __( 'Email copyright', 'super-forms' ),
@@ -320,6 +324,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'filter' => true,
 	                'parent' => 'email_template',
 	                'filter_value' => 'email_template_1',
+                    'allow_empty' => true,
 	            ),
 	            'email_template_1_socials' => array(
 	                'name' => __( 'Email social icons', 'super-forms' ),
@@ -331,6 +336,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
 	                'filter' => true,
 	                'parent' => 'email_template',
 	                'filter_value' => 'email_template_1',
+                    'allow_empty' => true,
 	            ),
 	            'email_template_1_header_colors' => array(
 	                'name' => __( 'Header colors', 'super-forms' ),
