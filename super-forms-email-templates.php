@@ -11,7 +11,7 @@
  * Plugin Name: Super Forms - Email Templates
  * Plugin URI:  http://codecanyon.net/item/super-forms-drag-drop-form-builder/13979866
  * Description: Adds an extra email template to choose from
- * Version:     1.0.4
+ * Version:     1.0.5
  * Author:      feeling4design
  * Author URI:  http://codecanyon.net/user/feeling4design
 */
@@ -37,7 +37,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
          *
          *	@since		1.0.0
         */
-        public $version = '1.0.4';
+        public $version = '1.0.5';
 
         
         /**
@@ -517,6 +517,7 @@ if( !class_exists( 'SUPER_Email_Templates' ) ) :
             	$socials = explode( "\n", $footer_socials );
 				foreach( $socials as $v ) {
 	                $exploded = explode('|', $v);
+                    if(!isset($exploded[1])) $exploded[1] = '';
                     if(!isset($exploded[2])) $exploded[2] = '';
 	                if( ( $exploded[0]!='' ) && ( $exploded[1]!='' ) ) {
 		                $email_body .= '<td style="font-family: Arial, sans-serif; font-size: 12px; font-weight: bold;">';
